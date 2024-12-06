@@ -3,13 +3,13 @@ pipeline {
     stages {
         stage('Cleanup') {
             steps {
-                cleanWs() // Cleans the workspace
+                cleanWs() 
             }
         }
 
         stage('Checkout Code') {
             steps {
-                checkout scm // Checks out the code from the repository
+                checkout scm 
             }
         }
 
@@ -17,7 +17,7 @@ pipeline {
             steps {
                 sshagent(['docker-server']) {
                     sh '''
-                    scp -r Dockerfile Jenkinsfile README.md assets error images index.html root@3.80.85.149:/opt/2244_ica2/
+                    scp -r Dockerfile Jenkinsfile README.md assets error images index.html root@54.196.153.66:/opt/2244_ica2/
                     '''
                 }
             }
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sshagent(['docker-server']) {
                     sh '''
-                    ssh root@3.80.85.149 "cd /opt/2244_ica2 && docker build -t static-website-nginx:develop-${BUILD_ID} ."
+                    ssh root@54.196.153.66 "cd /opt/2244_ica2 && docker build -t static-website-nginx:develop-${BUILD_ID} ."
                     '''
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 sshagent(['docker-server']) {
                     sh '''
-                    ssh root@3.80.85.149 "docker stop develop-container || true && docker rm develop-container || true && docker run --name develop-container -d -p 8081:80 static-website-nginx:develop-${BUILD_ID}"
+                    ssh root@54.196.153.66 "docker stop develop-container || true && docker rm develop-container || true && docker run --name develop-container -d -p 8081:80 static-website-nginx:develop-${BUILD_ID}"
                     '''
                 }
             }
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 sshagent(['docker-server']) {
                     sh '''
-                    ssh root@3.80.85.149 "curl -I http://3.80.85.149:8081"
+                    ssh root@54.196.153.66 "curl -I http://54.196.153.66:8081"
                     '''
                 }
             }
@@ -58,11 +58,11 @@ pipeline {
                 sshagent(['docker-server']) {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-auth', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh '''
-                        ssh root@3.80.85.149 "docker login -u $USERNAME -p $PASSWORD"
-                        ssh root@3.80.85.149 "docker tag static-website-nginx:develop-${BUILD_ID} $USERNAME/static-website-nginx:latest"
-                        ssh root@3.80.85.149 "docker tag static-website-nginx:develop-${BUILD_ID} $USERNAME/static-website-nginx:develop-${BUILD_ID}"
-                        ssh root@3.80.85.149 "docker push $USERNAME/static-website-nginx:latest"
-                        ssh root@3.80.85.149 "docker push $USERNAME/static-website-nginx:develop-${BUILD_ID}"
+                        ssh root@54.196.153.66 "docker login -u $USERNAME -p $PASSWORD"
+                        ssh root@54.196.153.66 "docker tag static-website-nginx:develop-${BUILD_ID} $USERNAME/static-website-nginx:latest"
+                        ssh root@54.196.153.66 "docker tag static-website-nginx:develop-${BUILD_ID} $USERNAME/static-website-nginx:develop-${BUILD_ID}"
+                        ssh root@54.196.153.66 "docker push $USERNAME/static-website-nginx:latest"
+                        ssh root@54.196.153.66 "docker push $USERNAME/static-website-nginx:develop-${BUILD_ID}"
                         '''
                     }
                 }
